@@ -1,10 +1,12 @@
 package com.example.blog.controller;
 
+import java.io.IOException;
 import java.util.List;
 
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties.Pageable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.blog.config.AppConstants;
 import com.example.blog.entities.Post;
@@ -28,7 +31,11 @@ import com.example.blog.payloads.PostDto;
 import com.example.blog.payloads.PostResponse;
 import com.example.blog.payloads.UserDto;
 import com.example.blog.repositories.PostRepo;
+import com.example.blog.services.FileService;
 import com.example.blog.services.PostService;
+		
+ 
+
 import com.example.blog.config.AppConstants;
 @RestController
 @RequestMapping("/api/posts")
@@ -42,6 +49,13 @@ public class PostController {
 	
 	@Autowired
 	private PostRepo postRepo;
+	
+	@Autowired
+	private FileService fileService ;
+	
+	
+	@Value("${project.image}")
+	private String path;
 	
 	
 	@PostMapping("/user/{userId}/category/{categoryId}/posts")
@@ -154,7 +168,17 @@ public ResponseEntity<List<PostDto>>serachPostByTitle(@PathVariable("keywords")S
 }
 
 
-	
+@PostMapping("post/image/upload/{postId}")
+public ResponseEntity<PostDto> uploadPostImage(
+        @RequestParam("image")MultipartFile image,
+        @PathVariable Integer postId) throws IOException  {
+	 PostDto postDto =this.postService.getPostById(postId);
+ String fileName =this.fileService.uploadImage(path, image);
+
+ postDto.setImageName(fileName) ;
+PostDto updatePost= this.postService.updatePost(postDto, postId);
+ return new ResponseEntity<PostDto>(updatePost,HttpStatus.OK);
+}
 	
 	 
 	

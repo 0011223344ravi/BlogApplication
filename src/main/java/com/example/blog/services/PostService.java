@@ -41,4 +41,6 @@ public interface PostService {
 	List<PostDto> serachPosts(String keyword);
 	
 	
+	
+	
 }
